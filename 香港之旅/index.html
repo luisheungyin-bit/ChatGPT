@@ -1,0 +1,195 @@
+﻿<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>香港之旅｜行程規劃</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="glow"></div>
+  <header class="hero">
+    <nav class="topbar">
+      <div class="logo">HK</div>
+      <div class="nav-meta">
+        <span>香港之旅</span>
+        <span class="dot">•</span>
+        <span>行程規劃與天氣</span>
+      </div>
+      <button class="ghost" id="reset-plan" type="button">重設行程</button>
+    </nav>
+    <div class="hero-grid">
+      <div>
+        <p class="eyebrow">2026 / Hong Kong</p>
+        <h1>提畢+順畢+延畢仔的香港團。</h1>
+        <p class="lead">行程可即時編輯，地點一鍵開啟 Google 地圖，天氣即時更新。所有變更會儲存在你的瀏覽器。</p>
+        <div class="hero-actions">
+          <button class="primary" id="add-item" type="button">新增行程</button>
+          <button class="ghost" id="add-day" type="button">新增天數</button>
+          <button class="secondary" id="export-plan" type="button">匯出 JSON</button>
+        </div>
+        <div class="hero-hint">提示：可先新增天數，再加入行程細節。</div>
+      </div>
+      <div class="hero-card">
+        <div class="stat">
+          <span class="label">行程天數</span>
+          <span class="value" id="day-count">—</span>
+        </div>
+        <div class="stat">
+          <span class="label">景點數量</span>
+          <span class="value" id="item-count">—</span>
+        </div>
+        <div class="stat">
+          <span class="label">目前狀態</span>
+          <span class="value">可編輯 · 已保存</span>
+        </div>
+        <div class="divider"></div>
+        <p class="mini">把行程分配到不同天數，排序會依時間自動整理。</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="content">
+    <section class="panel itinerary">
+      <div class="panel-header">
+        <h2>行程清單</h2>
+        <div class="panel-actions">
+          <button class="ghost" id="import-plan" type="button">匯入 JSON</button>
+          <button class="ghost" id="add-day-2" type="button">新增天數</button>
+          <button class="ghost" id="add-item-2" type="button">新增行程</button>
+        </div>
+      </div>
+      <div id="itinerary-wrap" class="day-grid"></div>
+    </section>
+
+    <section class="panel weather">
+      <div class="panel-header">
+        <h2>香港天氣</h2>
+        <button class="ghost" id="refresh-weather" type="button">重新整理</button>
+      </div>
+      <div class="weather-card">
+        <div class="weather-main">
+          <div>
+            <p class="weather-place">香港 • 中心區</p>
+            <p class="weather-status" id="weather-status">載入中</p>
+          </div>
+          <div class="weather-temp">
+            <span id="weather-temp">--</span>
+            <span class="unit">°C</span>
+          </div>
+        </div>
+        <div class="weather-details">
+          <div>
+            <span class="label">體感</span>
+            <span id="weather-feels">--</span>
+          </div>
+          <div>
+            <span class="label">降雨</span>
+            <span id="weather-rain">--</span>
+          </div>
+          <div>
+            <span class="label">風速</span>
+            <span id="weather-wind">--</span>
+          </div>
+          <div>
+            <span class="label">更新時間</span>
+            <span id="weather-updated">--</span>
+          </div>
+        </div>
+      </div>
+      <div class="forecast" id="forecast"></div>
+      <p class="weather-note">資料來源：Open-Meteo（免 API Key）。</p>
+    </section>
+
+    <section class="panel notes">
+      <div class="panel-header">
+        <h2>旅行小抄</h2>
+        <button class="ghost" id="add-note" type="button">新增小抄</button>
+      </div>
+      <form id="note-form" class="note-form">
+        <label>
+          <span>新增小抄</span>
+          <textarea id="note-input" name="note" rows="2" placeholder="輸入旅途提醒或靈感"></textarea>
+        </label>
+        <div class="form-actions">
+          <button class="secondary" type="button" id="note-cancel">清空</button>
+          <button class="primary" type="submit">加入</button>
+        </div>
+      </form>
+      <ol class="note-list" id="note-list"></ol>
+    </section>
+  </main>
+
+  <div class="modal" id="editor-modal" aria-hidden="true">
+    <div class="modal-overlay" data-close></div>
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modal-title">新增行程</h3>
+        <button class="icon" data-close aria-label="關閉">✕</button>
+      </div>
+      <form id="item-form">
+        <div class="form-grid">
+          <label>
+            <span>天數</span>
+            <input id="item-day" name="day" list="day-options" placeholder="Day 1 / 第一天" required>
+          </label>
+          <label>
+            <span>時間</span>
+            <input id="item-time" name="time" placeholder="09:30">
+          </label>
+          <label>
+            <span>標題</span>
+            <input id="item-title" name="title" placeholder="景點名稱" required>
+          </label>
+          <label>
+            <span>地點</span>
+            <input id="item-location" name="location" placeholder="地址或地標">
+          </label>
+          <label class="wide">
+            <span>備註</span>
+            <textarea id="item-notes" name="notes" rows="3" placeholder="交通方式、票券、餐廳等"></textarea>
+          </label>
+        </div>
+        <datalist id="day-options"></datalist>
+        <div class="form-actions">
+          <button class="secondary" type="button" data-close>取消</button>
+          <button class="primary" type="submit">儲存</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal" id="day-modal" aria-hidden="true">
+    <div class="modal-overlay" data-close></div>
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>新增天數</h3>
+        <button class="icon" data-close aria-label="關閉">✕</button>
+      </div>
+      <form id="day-form">
+        <label>
+          <span>天數名稱</span>
+          <input id="day-name" name="dayName" placeholder="Day 7 01/23 (五) 自由行" required>
+        </label>
+        <p class="form-hint">只要輸入標題即可建立空白天數，可稍後再補行程。</p>
+        <div class="form-actions">
+          <button class="secondary" type="button" data-close>取消</button>
+          <button class="primary" type="submit">新增</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <input id="import-file" class="visually-hidden" type="file" accept="application/json">
+
+  <footer class="footer">
+    <p>© 香港之旅 - 行程與天氣儀表板</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
+
